@@ -5,6 +5,7 @@
 
 using namespace std;
 
+// Hopefully this could be better implemented in the future.
 #define BOARD_SZ 3
 #define BOARD_SQ BOARD_SZ*BOARD_SZ
 
@@ -50,8 +51,8 @@ ostream& operator<<(ostream &out, TTTState ttt) {
 
 int main() {
 	
-	TTTState ttt;
-	cout << ttt;
+	TTTState *ttt = new TTTState();
+	cout << *ttt;
 
 	return 0;
 
