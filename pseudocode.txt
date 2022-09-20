@@ -1,0 +1,30 @@
+// 0: playing 1: CAT, 2: X, 3: O
+uint check(cell[][] sets) {
+
+	bool cat = true; // all sets contain both players
+	for (cell[] set in sets) {
+		unsigned int sf = 0; // subset flags
+		for (cell c in set) {
+			switch (c) {
+				case 0: sf |= 0b1;   // empty
+				case 1: sf |= 0b01;  // X
+				case 2: sf |= 0b001; // O
+			}
+		}
+		switch (sf) {
+			case 0b110:
+				return 0b010;
+			case 0b101:
+				return 0b001;
+			case 0b001:
+			case 0b010:
+				cat = false;
+			case 0b011: 
+			case 0b111:
+				break;
+		}
+		
+	}
+
+} // jeff mcmillan
+
