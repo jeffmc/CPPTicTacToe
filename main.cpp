@@ -95,18 +95,18 @@ ostream& operator<<(ostream &out, TTTState* ttt) {
 	return out;
 };
 
-int main() {
+int playGame() {
 	
-	unsigned char turn = 1; // X always starts
-
-	bool playing = true;
-	char simp;
-	while (playing) {
+		char simp[3] = { };
+		unsigned char turn = 1; // X always starts
+		
 		cout << endl << (turn == 1 ? 'X' : 'O') << "'s turn!" << endl;
-
+		
 		TTTState *ttt = new TTTState();
 		cout << ttt;
 
+		cin.getline(simp, 3);
+		
 		int res = ttt->winner();
 		switch (res) {
 			case 0b100:
@@ -123,16 +123,19 @@ int main() {
 				break;
 		}
 
-		cin >> simp;
 		
 		if (turn == 1) {
 			turn = 2;
 		} else {
 			turn = 1;
 		}
+}
 
+int main() {
+	bool playing = true;
+	while (playing) {
+		int res = playGame();
 	}
-
 
 	return 0;
 
