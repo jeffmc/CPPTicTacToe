@@ -2,6 +2,7 @@
 // This program should run tic tac toe. TODO: Finish this!
 
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
@@ -21,13 +22,19 @@ class TTTState {
 		TTTState();
 		bool finished(); // returns true if no more moves can be made.
 		unsigned char winner(); // returns 0b100 for CAT, 0b010 for X win, 0b001 O win, should return 0b000 if game not over.
-		bool set(int x, int y, unsigned char p); // returns true if space was available and set, false if already occupied.
+		bool setPiece(int x, int y, unsigned char p); // returns true if space was available and set, false if already occupied.
 	private:
 		void checkSets(unsigned char* sf, int* sfb, int boff, int bStr, int cStr, int nSets);
 };
 
+
 TTTState::TTTState() {
 	for (int i=0;i<BOARD_SQ;i++) board[i] = 0b100;
+}
+
+bool TTTState::setPiece(int x, int y, unsigned char p) {
+	this->board[x + y * BOARD_SZ] = p; 
+	return true;
 }
 
 unsigned char TTTState::winner() {
@@ -98,43 +105,75 @@ ostream& operator<<(ostream &out, TTTState* ttt) {
 int playGame() {
 	
 		char simp[3] = { };
-		unsigned char turn = 1; // X always starts
-		
-		cout << endl << (turn == 1 ? 'X' : 'O') << "'s turn!" << endl;
-		
+		unsigned char turn = 0b010; // X always starts
+	
+		bool playing = true;	
 		TTTState *ttt = new TTTState();
-		cout << ttt;
 
-		cin.getline(simp, 3);
+		while (playing) {
+			cout << endl << (turn == 1 ? 'X' : 'O') << "'s turn!" << endl;
+			
+			cout << ttt;
+
+			cin.getline(simp, 3);
+
+			// cout << simp << endl;
 		
-		int res = ttt->winner();
-		switch (res) {
-			case 0b100:
-				cout << "Still playing...";
+			const char alphabet[] = ALPHABET_STR;
+			int x = -1, y = -1;
+			for (int i=0;i<BOARD_SZ;i++) {
+				if (alphabet[i] == simp[0]) {
+					x = i;
+					break;
+				}
+			}
+			switch (simp[1]) {
+				case '1': y = 0; break;
+				case '2': y = 1; break;
+				case '3': y = 2; break;
+				case '4': y = 3; break;
+				case '5': y = 4; break;
+				case '6': y = 5; break;
+				case '7': y = 6; break;
+				case '8': y = 7; break;
+				case '9': y = 8; break;
+				default: cout << "ERRORRR!!!!" << endl;
 				break;
-			case 0b010:
-				cout << "X won!";
-				break;
-			case 0b001:
-				cout << "O won!";
-				break;
-			default:
-				cout << "GARBLED RESULT!";
-				break;
+			}
+			ttt->setPiece(x,y,turn);
+
+			int res = ttt->winner();
+			switch (res) {
+				case 0b100:
+					cout << "Still playing...";
+					break;
+				case 0b010:
+					cout << "X won!";
+					break;
+				case 0b001:
+					cout << "O won!";
+					break;
+				default:
+					cout << "GARBLED RESULT!";
+					break;
+			}
+
+			
+			if (turn == 0b010) {
+				turn = 0b001;
+			} else {
+				turn = 0b010;
+			}
 		}
 
-		
-		if (turn == 1) {
-			turn = 2;
-		} else {
-			turn = 1;
-		}
+		return -1; // Return value of player who won game or CAT.
 }
 
 int main() {
 	bool playing = true;
 	while (playing) {
 		int res = playGame();
+		break;
 	}
 
 	return 0;
