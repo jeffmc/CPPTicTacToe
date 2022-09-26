@@ -38,14 +38,34 @@ bool TTTState::setPiece(int x, int y, unsigned char p) {
 }
 
 unsigned char TTTState::winner() {
-	unsigned char sf[(BOARD_SZ+1)*2] = { };
+	int setCt = (BOARD_SZ+1)*2;
+	unsigned char sf[setCt] = { };
 	int sfi = 0;
 	checkSets(sf,&sfi,0,BOARD_SZ,1,BOARD_SZ); // rows
 	checkSets(sf,&sfi,0,1,BOARD_SZ,BOARD_SZ); // cols
 	checkSets(sf,&sfi,0,0,BOARD_SZ+1,1); // top left
 	checkSets(sf,&sfi,BOARD_SZ-1,0,BOARD_SZ-1,1); // top right
-
-	return -1; // TODO: Fix
+  bool cat = true;
+	for (int i=0;i<setCt;i++) {
+		switch (sf[i]) {
+			case 0b110:
+			case 0b101:
+				cat = false;
+				break;
+			case 0b010:
+			case 0b001:
+				return sf[i];
+				break;
+			case 0b100:
+			case 0b111:
+			case 0b011:
+				break;
+			default:
+				cout << "Unknown set flag state: " << (int)sf[i] << endl;
+				break;
+		}
+	}
+	return cat ? 0b100 : 0b000; // TODO: Fix
 }
 
 void TTTState::checkSets(unsigned char* sf, int* sfb, int boff, int bStr, int cStr, int nSets) {
@@ -103,22 +123,17 @@ ostream& operator<<(ostream &out, TTTState* ttt) {
 };
 
 int playGame() {
-	
 		char simp[3] = { };
-		unsigned char turn = 0b010; // X always starts
-	
+		unsigned char turn = 0b010; // X always starts	
 		bool playing = true;	
 		TTTState *ttt = new TTTState();
 
 		while (playing) {
-			cout << endl << (turn == 1 ? 'X' : 'O') << "'s turn!" << endl;
+			cout << (turn == 0b010 ? 'X' : 'O') << "'s turn!" << endl;
+			cout << endl << ttt;
 			
-			cout << ttt;
-
+			// User input
 			cin.getline(simp, 3);
-
-			// cout << simp << endl;
-		
 			const char alphabet[] = ALPHABET_STR;
 			int x = -1, y = -1;
 			for (int i=0;i<BOARD_SZ;i++) {
@@ -140,12 +155,17 @@ int playGame() {
 				default: cout << "ERRORRR!!!!" << endl;
 				break;
 			}
+			// Board manipulation
 			ttt->setPiece(x,y,turn);
 
+			// Board logic checking
 			int res = ttt->winner();
 			switch (res) {
-				case 0b100:
+				case 0b000:
 					cout << "Still playing...";
+					break;
+				case 0b100:
+					cout << "CAT game!";
 					break;
 				case 0b010:
 					cout << "X won!";
@@ -156,17 +176,20 @@ int playGame() {
 				default:
 					cout << "GARBLED RESULT!";
 					break;
-			}
-
-			
+			}	
+			cout << endl;	
 			if (turn == 0b010) {
 				turn = 0b001;
 			} else {
 				turn = 0b010;
 			}
+			// Game finished?
+			if (res != 0b000) {
+				cout << endl << ttt;
+				return res; // Return value of player who won game or CAT.
+			}
 		}
-
-		return -1; // Return value of player who won game or CAT.
+		return 0b000; // shouldn't be returned!
 }
 
 int main() {
