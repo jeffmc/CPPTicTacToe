@@ -1,21 +1,36 @@
 #include <iostream>
-#include <bitset>
 #include <limits>
+#include <cstring>
 
 using namespace std;
 
-int main() {
-	char simp[3] = { };
-	
+// https://isocpp.org/wiki/faq/input-output#istream-and-ignore
+
+bool getChars(char arr[], int len) {
 	while (true) {
-		cout << "I want 2 chars:";
-		cin.get(simp, 3);
-		if (cin.gcount() < 1 ) cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		cout << endl << "Got:" << cin.gcount() << endl;
-		for (int i=0;i<3;i++) cout << (bitset<8>) simp[i] << ' ' << (unsigned int) simp[i] << endl; 
-		cout << endl;
-		break;
+		while (true) {
+			cout << endl << "Need chars(" << len-1 << "): ";
+			cin.get(arr, len);
+			
+			if (cin.peek() == '\n' && strlen(arr) == len-1) {
+				cin.ignore();
+				break;
+			} else {
+				cout << "Not valid!" << endl;
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			}
+		}
+		cout << "Got chars: " << arr << endl;
 	}
+	return true;
+}
+
+int main() {
+	char chars[4] = { };
+	getChars(chars, 4);
+	//cout << endl << "Returned: " << chars; 
 
 	return 0;
 }
+
