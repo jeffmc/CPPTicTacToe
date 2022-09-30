@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <limits>
+#include <cstring>
 
 using namespace std;
 
@@ -15,6 +16,18 @@ using namespace std;
 	#error BOARD_SZ cannot be more than 26.
 #endif
 
+union TTTCoord {
+	unsigned short raw;
+	struct {
+		unsigned char x;
+		unsigned char y;
+	};
+	TTTCoord() {
+		this->x = numeric_limits<unsigned char>::max();
+		this->y = numeric_limits<unsigned char>::max();
+	}
+};
+
 class TTTState {
 	public:
 		unsigned char board[BOARD_SQ]; // 0b100 for empty, 0b010 for X, 0b001 for O.
@@ -22,7 +35,7 @@ class TTTState {
 		TTTState();
 		bool finished(); // returns true if no more moves can be made.
 		unsigned char winner(); // returns 0b100 for CAT, 0b010 for X win, 0b001 O win, should return 0b000 if game not over.
-		bool setPiece(int x, int y, unsigned char p); // returns true if space was available and set, false if already occupied.
+		bool setPiece(TTTCoord* coord, unsigned char p); // returns true if space was available and set, false if already occupied.
 	private:
 		void checkSets(unsigned char* sf, int* sfb, int boff, int bStr, int cStr, int nSets);
 };
@@ -32,8 +45,8 @@ TTTState::TTTState() {
 	for (int i=0;i<BOARD_SQ;i++) board[i] = 0b100;
 }
 
-bool TTTState::setPiece(int x, int y, unsigned char p) {
-	this->board[x + y * BOARD_SZ] = p; 
+bool TTTState::setPiece(TTTCoord* coord, unsigned char p) {
+	this->board[coord->x + coord->y * BOARD_SZ] = p; 
 	return true;
 }
 
@@ -122,41 +135,80 @@ ostream& operator<<(ostream &out, TTTState* ttt) {
 	return out;
 };
 
+bool getChars(char arr[], int len, const char* prompt) {
+	while (true) {
+		cout << endl << prompt; 
+		cin.get(arr, len);
+		
+		if (cin.peek() == '\n' && strlen(arr) == len-1) {
+			cin.ignore();
+			break;
+		} else {
+			cout << "Not valid!" << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
+	}
+	return true;
+}
+
+bool getCoord(TTTCoord& coord) {
+		const char* prompt = "Enter a move: ";
+		char simp[3] = {};
+		const char alphabet[] = ALPHABET_STR;
+		TTTCoord temp = TTTCoord();
+
+		while (true) {
+			getChars(simp,3,prompt);
+			for (int i=0;i<BOARD_SZ;i++) {
+				if (alphabet[i] == simp[0]) {
+					temp.x = i;
+					break;
+				}
+			}
+			if (temp.x < 0 || temp.x >= BOARD_SZ) {
+					cout << "Not valid!" << endl;
+					continue;
+			}
+			switch (simp[1]) {
+				case '1': temp.y = 0; break;
+				case '2': temp.y = 1; break;
+				case '3': temp.y = 2; break;
+				case '4': temp.y = 3; break;
+				case '5': temp.y = 4; break;
+				case '6': temp.y = 5; break;
+				case '7': temp.y = 6; break;
+				case '8': temp.y = 7; break;
+				case '9': temp.y = 8; break;
+				default: numeric_limits<unsigned char>::max();
+				break;
+			}
+			if (temp.y < 0 || temp.y >= BOARD_SZ) {
+					cout << "Not valid!" << endl;
+					continue;
+			}
+			break;
+		}
+		coord = temp;
+		return true;
+}
+
+
 int playGame() {
-		char simp[3] = { };
 		unsigned char turn = 0b010; // X always starts	
 		bool playing = true;	
 		TTTState *ttt = new TTTState();
+		TTTCoord *coord = new TTTCoord();
 
 		while (playing) {
 			cout << (turn == 0b010 ? 'X' : 'O') << "'s turn!" << endl;
 			cout << endl << ttt;
 			
 			// User input
-			cin.getline(simp, 3);
-			const char alphabet[] = ALPHABET_STR;
-			int x = -1, y = -1;
-			for (int i=0;i<BOARD_SZ;i++) {
-				if (alphabet[i] == simp[0]) {
-					x = i;
-					break;
-				}
-			}
-			switch (simp[1]) {
-				case '1': y = 0; break;
-				case '2': y = 1; break;
-				case '3': y = 2; break;
-				case '4': y = 3; break;
-				case '5': y = 4; break;
-				case '6': y = 5; break;
-				case '7': y = 6; break;
-				case '8': y = 7; break;
-				case '9': y = 8; break;
-				default: cout << "ERRORRR!!!!" << endl;
-				break;
-			}
+			getCoord(*coord);
+
 			// Board manipulation
-			ttt->setPiece(x,y,turn);
+			ttt->setPiece(coord,turn);
 
 			// Board logic checking
 			int res = ttt->winner();
